@@ -7,12 +7,12 @@ node ('nimble-jenkins-slave') {
 
     stage ('Build docker image') {
         sh 'mvn clean install'
-        sh 'docker build -t nimbleplaform/registration-service:${BUILD_NUMBER} .'
+        sh 'docker build -t nimbleplatform/registration-service:${BUILD_NUMBER} .'
     }
 
     stage ('Push docker image') {
         withDockerRegistry([credentialsId: 'NimbleDocker']) {
-            sh 'docker push nimbleplaform/registration-service:${BUILD_NUMBER}'
+            sh 'docker push nimbleplatform/registration-service:${BUILD_NUMBER}'
         }
     }
 
