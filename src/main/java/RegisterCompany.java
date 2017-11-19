@@ -17,13 +17,6 @@
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.apache.commons.io.IOUtils;
-import org.apache.http.HttpEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ByteArrayEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -50,7 +43,7 @@ public class RegisterCompany extends HttpServlet {
         JsonObject credentials = company.getAsJsonObject("credentials");
         company.remove("credentials");
 
-        String loggedUser = Common.sendPostCommand(Common.LOGIN_URL, credentials.toString(), "");
+        String loggedUser = Common.sendPostCommand(Common.USER_LOGIN_URL, credentials.toString(), "");
         String accessToken = Common.getKeyFromJsonString("accessToken", loggedUser);
 
         String registeredCompany = Common.sendPostCommand(Common.COMPANY_REGISTER_URL, company.toString(), accessToken);

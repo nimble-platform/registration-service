@@ -1,6 +1,3 @@
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-
 /**
  * Created by evgeniyh on 11/16/17.
  */
@@ -112,7 +109,7 @@ public class Main {
             String email = EMAILS_FOR_USERS[i];
             out(String.format("Running register a user for company '%s'", companyName));
             String userToRegister = String.format(USER_JSON_TEMPLATE, USERNAMES_FOR_COMANIES[i], FIRST_NAME, LAST_NAME, email, email, PASSWORD);
-            String createdUser = Common.sendPostCommand(Common.userRegisterUrl, userToRegister, "");
+            String createdUser = Common.sendPostCommand(Common.USER_REGISTER_URL, userToRegister, "");
             if (createdUser == null) {
                 out("Error during registration");
                 System.exit(1);

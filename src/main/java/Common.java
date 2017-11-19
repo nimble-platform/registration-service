@@ -19,8 +19,8 @@ import java.io.StringWriter;
 public class Common {
     private static String BASE_URL = "https://nimble-platform.salzburgresearch.at/nimble/identity";
 
-    static String LOGIN_URL = BASE_URL + "/login";
-    static String userRegisterUrl = BASE_URL + "/register/user";
+    static String USER_LOGIN_URL = BASE_URL + "/login";
+    static String USER_REGISTER_URL = BASE_URL + "/register/user";
     static String COMPANY_REGISTER_URL = BASE_URL + "/register/company";
 
     static String getInputStreamAsString(InputStream stream) throws IOException {
@@ -61,7 +61,7 @@ public class Common {
     }
 
 
-    public static String getKeyFromJsonString(String key, String jsonString) {
+    static String getKeyFromJsonString(String key, String jsonString) {
         JsonObject user = (JsonObject) new JsonParser().parse(jsonString);
         if (user != null) {
             return user.get(key).getAsString();

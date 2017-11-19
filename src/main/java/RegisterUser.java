@@ -45,16 +45,17 @@ public class RegisterUser extends HttpServlet {
         System.out.println("Inside do post on the /registerUser path");
         String inputString = Common.getInputStreamAsString(request.getInputStream());
 
-        System.out.println(inputString);
-        JsonObject user = (JsonObject)new JsonParser().parse(inputString);
+//        System.out.println(inputString);
+        JsonObject user = (JsonObject) new JsonParser().parse(inputString);
 
-        String registeredUser = Common.sendPostCommand(Common.LOGIN_URL, inputString, "");
+        //TODO: validate required fields
+
+        String registeredUser = Common.sendPostCommand(Common.USER_REGISTER_URL, inputString, "");
 
         System.out.println("Successfully registered the user - " + registeredUser);
         response.getWriter().write(registeredUser);
         response.setStatus(200);
     }
-
 
 
 //
