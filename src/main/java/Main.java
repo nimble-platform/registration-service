@@ -86,7 +86,6 @@ public class Main {
             "NONE",
             "41",
             "31",
-
     };
 
     private static String POSTAL_CODE = "NONE (update me)";
