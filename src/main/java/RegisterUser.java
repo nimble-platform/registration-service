@@ -50,11 +50,11 @@ public class RegisterUser extends HttpServlet {
 
         //TODO: validate required fields
 
-        String registeredUser = Common.sendPostCommand(Common.USER_REGISTER_URL, inputString, "");
-
-        System.out.println("Successfully registered the user - " + registeredUser);
-        response.getWriter().write(registeredUser);
-        response.setStatus(200);
+//        String registeredUser = Common.sendPostCommand(Common.USER_REGISTER_URL, inputString, "");
+//
+//        System.out.println("Successfully registered the user - " + registeredUser);
+//        response.getWriter().write(registeredUser);
+//        response.setStatus(200);
     }
 
 

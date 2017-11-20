@@ -94,42 +94,27 @@ public class Main {
     private static String LAST_NAME = "LAST_NAME (update me)";
     private static String PASSWORD = "MY_VERY_STRONG_PASSWORD";
 
-    private static String CREDENTIALS_TEMPLATE = "{ \"username\": \"%s\", \"password\": \"%s\" } ";
-
-    private static String USER_JSON_TEMPLATE = "{ \"user\": { \"username\": \"%s\", \"firstname\": \"%s\", \"lastname\": \"%s\", \"email\": \"%s\" }," +
-            "\"credentials\": { \"username\": \"%s\", \"password\": \"%s\" } }";
-
-    private static String COMPANY_JSON_TEMPLATE = "{\"name\": \"%s\", \"userID\": %s, " +
-            " \"address\": {\"country\": \"%s\", \"cityName\": \"%s\", \"streetName\": \"%s\", \"buildingNumber\": \"%s\", \"postalCode\": \"%s\"}," +
-            " \"credentials\": %s }";
-
     public static void main(String[] args) {
+//        Common.generateJsonsFromExcel("nimble_entities.xlsx");
         for (int i = 0; i < 1; i++) {
             String companyName = COMPANY_NAMES[i];
             String email = EMAILS_FOR_USERS[i];
-            out(String.format("Running register a user for company '%s'", companyName));
-            String userToRegister = String.format(USER_JSON_TEMPLATE, USERNAMES_FOR_COMANIES[i], FIRST_NAME, LAST_NAME, email, email, PASSWORD);
-            String createdUser = Common.sendPostCommand(Common.USER_REGISTER_URL, userToRegister, "");
-            if (createdUser == null) {
+            out(String.format("Running register a company '%s' with user '%s'", companyName, email));
+            String userToRegister = JsonGenerator.createUserJson(USERNAMES_FOR_COMANIES[i], FIRST_NAME, LAST_NAME, email, PASSWORD);
+            String registeredUser = Common.registerUser(userToRegister);
+            if (registeredUser == null) {
                 out("Error during registration");
                 System.exit(1);
             }
 
-            String userId = Common.getKeyFromJsonString("userID", createdUser);
+            String userId = Common.getKeyFromJsonString("userID", registeredUser);
             out(String.format("SUCCESS !!! User named '%s' for company '%s' has the id '%s'", USERNAMES_FOR_COMANIES[i], companyName, userId));
 
-//        String userId = "476";
+            Credentials credentials = Common.loginUser(email, PASSWORD);
+            String companyJson = JsonGenerator.createCompanyJson(companyName, credentials.getUserID(), COMPANY_COUNTRIES[i], COMPANY_CITIES[i], COMPANY_STREETS[i], COMPANY_BUILDINGS[i], POSTAL_CODE);
+            String registeredCompany = Common.registerCompany(companyJson, credentials);
+            out(registeredCompany);
 
-            out(String.format("Running register a company '%s' with user '%s'", companyName, email));
-
-            String credentials = String.format(CREDENTIALS_TEMPLATE, email, PASSWORD);
-            String companyToRegister = String.format(COMPANY_JSON_TEMPLATE, companyName, userId, COMPANY_COUNTRIES[i], COMPANY_CITIES[i], COMPANY_STREETS[i], COMPANY_BUILDINGS[i], POSTAL_CODE, credentials);
-
-            String registeredCompany = Common.sendPostCommand("http://localhost:999/registerCompany", companyToRegister, "");
-            if (registeredCompany == null) {
-                out("Error during registration");
-                System.exit(1);
-            }
             String companyId = Common.getKeyFromJsonString("companyID", registeredCompany);
             out(String.format("SUCCESS !!! Registered company '%s' by user id '%s', company id is '%s'", companyName, userId, companyId));
         }

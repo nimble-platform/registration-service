@@ -42,14 +42,14 @@ public class RegisterCompany extends HttpServlet {
         JsonObject company = (JsonObject)new JsonParser().parse(inputString);
         JsonObject credentials = company.getAsJsonObject("credentials");
         company.remove("credentials");
-
-        String loggedUser = Common.sendPostCommand(Common.USER_LOGIN_URL, credentials.toString(), "");
-        String accessToken = Common.getKeyFromJsonString("accessToken", loggedUser);
-
-        String registeredCompany = Common.sendPostCommand(Common.COMPANY_REGISTER_URL, company.toString(), accessToken);
-        System.out.println("Successfully registered the company - " + registeredCompany);
-        response.getWriter().write(registeredCompany);
-        response.setStatus(200);
+//
+//        String loggedUser = Common.sendPostCommand(Common.USER_LOGIN_URL, credentials.toString());
+//        String accessToken = Common.getKeyFromJsonString("accessToken", loggedUser);
+//
+//        String registeredCompany = Common.sendPostCommand(Common.COMPANY_REGISTER_URL, company.toString(), accessToken);
+//        System.out.println("Successfully registered the company - " + registeredCompany);
+//        response.getWriter().write(registeredCompany);
+//        response.setStatus(200);
     }
 
 //
