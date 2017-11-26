@@ -15,14 +15,22 @@
  */
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 
 import javax.servlet.ServletException;
+import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.Part;
 import java.io.IOException;
+import java.util.Enumeration;
+import java.util.List;
 
+@MultipartConfig
 @WebServlet("/register")
 public class Register extends HttpServlet {
     private static final long serialVersionUID = 1L;
@@ -30,6 +38,30 @@ public class Register extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
+            Enumeration<String> headers = request.getHeaderNames();
+//            while (headers.hasMoreElements()) {
+//                String h = headers.nextElement();
+//                String s = request.getHeader(h);
+//                System.out.println(String.format("%s = %s", h, s));
+//            }
+            Part p = request.getPart("excel-file");
+            if (p == null) {
+                logAndSetResponse(response, HttpServletResponse.SC_BAD_REQUEST, "use excel-file header for file\n");
+                return;
+            }
+            List<FullRegisterData> registerList = Common.generateJsonArrayFromStream(p.getInputStream());
+            if (registerList == null) {
+                logAndSetResponse(response, HttpServletResponse.SC_BAD_REQUEST, "Failed to parse the excel file\n");
+                return;
+            }
+            if (true) {
+                return;
+
+            }
+            for (FullRegisterData data : registerList) {
+                fullRegisterFlow(data);
+            }
+
             System.out.println("Inside do post on the /register path");
             String inputString = Common.getInputStreamAsString(request.getInputStream());
             if (inputString == null || inputString.isEmpty()) {
@@ -38,10 +70,22 @@ public class Register extends HttpServlet {
             }
 
             System.out.println("Received input : " + inputString);
-            FullRegisterData registerData = (new Gson()).fromJson(inputString, FullRegisterData.class);
+            try {
+                FullRegisterData registerData = (new Gson()).fromJson(inputString, FullRegisterData.class);
+                fullRegisterFlow(registerData);
+            } catch (RegisterException ex) {
+                logAndSetResponse(response, ex.getErrorCode(), ex.getMessage() + "\n");
+
+            }
+        } catch (Exception e) {
+            logAndSetResponse(response, HttpServletResponse.SC_BAD_REQUEST, "Error during register command : " + e.getMessage());
+        }
+    }
+
+    private void fullRegisterFlow(FullRegisterData registerData) throws RegisterException {
+        try {
             if (!registerData.hasAllValues()) {
-                logAndSetResponse(response, HttpServletResponse.SC_PARTIAL_CONTENT, "Missing values from the template\n");
-                return;
+                throw new RegisterException("Missing values from the template", HttpServletResponse.SC_PARTIAL_CONTENT);
             }
 
             String userEmail = registerData.getUserEmail();
@@ -64,11 +108,9 @@ public class Register extends HttpServlet {
             String companyId = Common.getKeyFromJsonString("companyID", registeredCompany);
 
             String successMessage = String.format("User registered id='%s', Company registered id='%s'\n", userId, companyId);
-            logAndSetResponse(response, HttpServletResponse.SC_OK, successMessage);
+
         } catch (Exception ex) {
-            String failedMessage = "Error during register command : " + ex.getMessage() + "\n";
-            logAndSetResponse(response, HttpServletResponse.SC_BAD_REQUEST, failedMessage);
-            ex.printStackTrace();
+            throw new RegisterException("Error during register command : " + ex.getMessage(), HttpServletResponse.SC_BAD_REQUEST);
         }
     }
 

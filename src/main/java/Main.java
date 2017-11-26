@@ -1,3 +1,6 @@
+import java.io.File;
+import java.io.FileInputStream;
+
 /**
  * Created by evgeniyh on 11/16/17.
  */
@@ -81,7 +84,9 @@ public class Main {
     private static String PASSWORD = "MY_VERY_STRONG_PASSWORD";
 
     public static void main(String[] args) {
-//        Common.generateJsonsFromExcel("nimble_entities.xlsx");
+
+//        FileInputStream excelFile = new FileInputStream(new File("nimble_entities.xlsx"));
+//        Common.generateJsonArrayFromStream(excelFile);
         for (int i = 0; i < 1; i++) {
             String companyName = COMPANY_NAMES[i];
             String email = EMAILS_FOR_USERS[i];

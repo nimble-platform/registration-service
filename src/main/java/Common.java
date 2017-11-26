@@ -16,6 +16,8 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.*;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Created by evgeniyh on 11/19/17.
@@ -82,38 +84,86 @@ public class Common {
         throw new RuntimeException(String.format("Missing key '%s' in json string '%s'", key, jsonString));
     }
 
-    static JsonArray generateJsonsFromExcel(String path) {
-        int arraySize = 0;
-        JsonArray jsonsArray = new JsonArray();
-        try {
-            FileInputStream excelFile = new FileInputStream(new File(path));
-
-            Workbook workbook = new XSSFWorkbook(excelFile);
-            Sheet companiesSheet = workbook.getSheet("Companies");
-            if (companiesSheet == null) {
-                companiesSheet = workbook.getSheetAt(0);
-            }
-            for (Row currentRow : companiesSheet) {
-                for (Cell currentCell : currentRow) {
-                    CellType type = currentCell.getCellTypeEnum();
-                    if (type == CellType.STRING) {
-                        System.out.print(currentCell.getStringCellValue() + "--");
-                    } else if (type == CellType.NUMERIC) {
-                        System.out.print(currentCell.getNumericCellValue() + "--");
-                    } else if (type == CellType.BLANK) {
-                        System.out.print("**");
-                    } else {
-                        System.out.println(type + "NOT supported");
-                    }
-                }
-                System.out.println();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+    static List<FullRegisterData> generateJsonArrayFromStream(InputStream inputStream) throws Exception {
+        List<FullRegisterData> list = new LinkedList<>();
+        Workbook workbook = new XSSFWorkbook(inputStream);
+        Sheet companiesSheet = workbook.getSheet("Companies");
+        if (companiesSheet == null) {
+            companiesSheet = workbook.getSheetAt(0);
         }
+        if (!excelHasAllValues(companiesSheet.getRow(0))) {
+            throw new RuntimeException("Failed to parse the excel file");
+        }
+        System.out.println(companiesSheet.getLastRowNum());
 
+        for (int i = 1; i < companiesSheet.getLastRowNum(); i++) {
+            System.out.println("Parsing row number - " + i);
+            Row row = companiesSheet.getRow(i);
 
-        return null;
+//                if (row.getCell(0).getCellTypeEnum() == CellType.BLANK) {
+//                    System.out.println("Reached a blank row - stopping parsing");
+//                    break;
+//                }
+            for (int j = 0; j < 10; j++) {
+                Cell currentCell = row.getCell(i);
+                CellType type = currentCell.getCellTypeEnum();
+                if (type != CellType.STRING && type != CellType.NUMERIC) {
+                    throw new RuntimeException(type + " is not supported");
+                }
+            }
+            String firstName = row.getCell(0).getStringCellValue();
+            String lastName = row.getCell(1).getStringCellValue();
+            String email = row.getCell(2).getStringCellValue();
+            String password = row.getCell(3).getStringCellValue();
+            String companyName = row.getCell(4).getStringCellValue();
+            String country = row.getCell(5).getStringCellValue();
+            String city = row.getCell(6).getStringCellValue();
+            String street = row.getCell(7).getStringCellValue();
+            String building = String.valueOf(row.getCell(8).getNumericCellValue());
+            String postalCode = row.getCell(9).getStringCellValue();
+
+            if (firstName.isEmpty() || lastName.isEmpty() || email.isEmpty() || password.isEmpty() || companyName.isEmpty() ||
+                    country.isEmpty() || city.isEmpty() || street.isEmpty() || building.isEmpty() || postalCode.isEmpty()) {
+                throw new RuntimeException("Values inside the excel file can't be empty");
+            }
+
+            list.add(new FullRegisterData(firstName, lastName, email, password, companyName, country, city, street, building, postalCode));
+        }
+        return list;
+//                System.out.println(firstName);
+//                System.out.println(lastName);
+//                System.out.println(email);
+//                System.out.println(password);
+//                System.out.println(companyName);
+//                System.out.println(country);
+//                System.out.println(city);
+//                System.out.println(street);
+//                System.out.println(building);
+//                System.out.println(postalCode);
+    }
+
+    private static boolean excelHasAllValues(Row row) {
+//        System.out.println(row.getCell(0).getStringCellValue());
+//        System.out.println(row.getCell(1).getStringCellValue());
+//        System.out.println(row.getCell(2).getStringCellValue());
+//        System.out.println(row.getCell(3).getStringCellValue());
+//        System.out.println(row.getCell(4).getStringCellValue());
+//        System.out.println(row.getCell(5).getStringCellValue());
+//        System.out.println(row.getCell(6).getStringCellValue());
+//        System.out.println(row.getCell(7).getStringCellValue());
+//        System.out.println(row.getCell(8).getStringCellValue());
+//        System.out.println(row.getCell(9).getStringCellValue());
+
+        return row.getCell(0).getStringCellValue().equals("UserFirstName") &&
+                row.getCell(1).getStringCellValue().equals("UserLastName") &&
+                row.getCell(2).getStringCellValue().equals("UserEmail") &&
+                row.getCell(3).getStringCellValue().equals("UserPassword") &&
+                row.getCell(4).getStringCellValue().equals("CompanyName") &&
+                row.getCell(5).getStringCellValue().equals("Country") &&
+                row.getCell(6).getStringCellValue().equals("City") &&
+                row.getCell(7).getStringCellValue().equals("Street") &&
+                row.getCell(8).getStringCellValue().equals("Building") &&
+                row.getCell(9).getStringCellValue().equals("PostalCode");
     }
 
     private static String logAndGetResponse(HttpResponse response) {
