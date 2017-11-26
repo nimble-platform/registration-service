@@ -2,19 +2,6 @@
  * Created by evgeniyh on 11/16/17.
  */
 public class Main {
-    private static String[] USERNAMES_FOR_COMANIES = {
-            "Pro_vernis_user",
-            "Vicbar_user",
-            "Químicas_Tovar_user",
-            "Schindler_Holzplatte_user",
-            "Interboard_user",
-            "Tableros_Garrido_user",
-            "Meditrans_user",
-            "Hoffman_Transport_user",
-            "Hase_Logistik_user",
-
-    };
-
     private static String[] EMAILS_FOR_USERS = {
             "user@Pro_vernis.com",
             "user@Vicbar.com",
@@ -99,7 +86,7 @@ public class Main {
             String companyName = COMPANY_NAMES[i];
             String email = EMAILS_FOR_USERS[i];
             out(String.format("Running register a company '%s' with user '%s'", companyName, email));
-            String userToRegister = JsonGenerator.createUserJson(USERNAMES_FOR_COMANIES[i], FIRST_NAME, LAST_NAME, email, PASSWORD);
+            String userToRegister = JsonGenerator.createUserJson(FIRST_NAME, LAST_NAME, email, PASSWORD);
             String registeredUser = Common.registerUser(userToRegister);
             if (registeredUser == null) {
                 out("Error during registration");
@@ -107,7 +94,7 @@ public class Main {
             }
 
             String userId = Common.getKeyFromJsonString("userID", registeredUser);
-            out(String.format("SUCCESS !!! User named '%s' for company '%s' has the id '%s'", USERNAMES_FOR_COMANIES[i], companyName, userId));
+            out(String.format("SUCCESS !!! User with email '%s' from company '%s' has the id '%s'", email, companyName, userId));
 
             SessionContext sessionContext = Common.loginUser(email, PASSWORD);
             String companyJson = JsonGenerator.createCompanyJson(companyName, userId, COMPANY_COUNTRIES[i], COMPANY_CITIES[i], COMPANY_STREETS[i], COMPANY_BUILDINGS[i], POSTAL_CODE);

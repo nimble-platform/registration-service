@@ -2,7 +2,6 @@
  * Created by evgeniyh on 11/22/17.
  */
 public class FullRegisterData {
-    private String username;
     private String firstName;
     private String lastName;
     private String userEmail;
@@ -14,8 +13,7 @@ public class FullRegisterData {
     private String building;
     private String postalCode;
 
-    public FullRegisterData(String username, String firstName, String lastName, String userEmail, String userPassword, String companyName, String country, String city, String street, String building, String postalCode) {
-        this.username = username;
+    public FullRegisterData(String firstName, String lastName, String userEmail, String userPassword, String companyName, String country, String city, String street, String building, String postalCode) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.userEmail = userEmail;
@@ -29,8 +27,7 @@ public class FullRegisterData {
     }
 
     public boolean hasAllValues() {
-        return username != null &&
-                firstName != null &&
+        return firstName != null &&
                 lastName != null &&
                 userEmail != null &&
                 userPassword != null &&
@@ -40,10 +37,6 @@ public class FullRegisterData {
                 street != null &&
                 building != null &&
                 postalCode != null;
-    }
-
-    public String getUsername() {
-        return username;
     }
 
     public String getFirstName() {

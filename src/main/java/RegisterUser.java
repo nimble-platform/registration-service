@@ -43,12 +43,12 @@ public class RegisterUser extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         System.out.println("Inside do post on the /registerUser path");
-        String inputString = Common.getInputStreamAsString(request.getInputStream());
+//        String inputString = Common.getInputStreamAsString(request.getInputStream());
 
 //        System.out.println(inputString);
-        JsonObject user = (JsonObject) new JsonParser().parse(inputString);
+//        JsonObject user = (JsonObject) new JsonParser().parse(inputString);
 
-        //TODO: validate required fields
+//        TODO: validate required fields
 
 //        String registeredUser = Common.sendPostCommand(Common.USER_REGISTER_URL, inputString, "");
 //

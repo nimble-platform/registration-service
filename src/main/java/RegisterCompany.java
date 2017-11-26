@@ -14,9 +14,11 @@
  * limitations under the License.
  */
 
+import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpResponse;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -27,21 +29,26 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 
-@WebServlet("/registerCompany")
+@WebServlet("/register")
 public class RegisterCompany extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        System.out.println("Inside do post on the /registerCompany path");
+        System.out.println("Inside do post on the /register path");
         InputStream fileStream = request.getInputStream();
         StringWriter writer = new StringWriter();
         IOUtils.copy(fileStream, writer, "UTF-8");
         String inputString = writer.toString();
-        System.out.println(inputString);
-        JsonObject company = (JsonObject)new JsonParser().parse(inputString);
-        JsonObject credentials = company.getAsJsonObject("credentials");
-        company.remove("credentials");
+        System.out.println("Received input : " + inputString);
+
+        FullRegisterData registerData = (new Gson()).fromJson(inputString, FullRegisterData.class);
+        if (!registerData.hasAllValues()) {
+            response.getWriter().write("Missing values from the template");
+            response.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
+        }
+
+        System.out.println("Everything is ok");
 //
 //        String loggedUser = Common.sendPostCommand(Common.USER_LOGIN_URL, credentials.toString());
 //        String accessToken = Common.getKeyFromJsonString("accessToken", loggedUser);
