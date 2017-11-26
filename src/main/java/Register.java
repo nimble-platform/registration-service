@@ -34,14 +34,12 @@ public class Register extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
             System.out.println("Inside do post on the /register path");
-            InputStream fileStream = request.getInputStream();
-            StringWriter writer = new StringWriter();
-            IOUtils.copy(fileStream, writer, "UTF-8");
-            String inputString = writer.toString();
+            String inputString = Common.getInputStreamAsString(request.getInputStream());
             if (inputString == null || inputString.isEmpty()) {
                 logAndSetResponse(response, HttpServletResponse.SC_PARTIAL_CONTENT, "Body can't be empty\n");
                 return;
             }
+
             System.out.println("Received input : " + inputString);
             FullRegisterData registerData = (new Gson()).fromJson(inputString, FullRegisterData.class);
             if (!registerData.hasAllValues()) {
@@ -63,25 +61,18 @@ public class Register extends HttpServlet {
             System.out.println(String.format("SUCCESS !!! User with email '%s' from company '%s' has the id '%s'", userEmail, companyName, userId));
             SessionContext sessionContext = Common.loginUser(userEmail, userPassword);
 
-            String companyJson = JsonGenerator.createCompanyJson(companyName, userId, COMPANY_COUNTRIES[i], COMPANY_CITIES[i], COMPANY_STREETS[i], COMPANY_BUILDINGS[i], POSTAL_CODE);
+            String companyJson = JsonGenerator.createCompanyJson(companyName, userId, registerData.getCountry(), registerData.getCity(), registerData.getStreet(), registerData.getBuilding(), registerData.getPostalCode());
             String registeredCompany = Common.registerCompany(companyJson, sessionContext);
-            out(registeredCompany);
 
             String companyId = Common.getKeyFromJsonString("companyID", registeredCompany);
 
-            String successMessage = String.format("User registered id='%s', Company registered id='%s'\n", null, null);
+            String successMessage = String.format("User registered id='%s', Company registered id='%s'\n", userId, companyId);
             logAndSetResponse(response, HttpServletResponse.SC_OK, successMessage);
         } catch (Exception ex) {
             String failedMessage = "Error during register command : " + ex.getMessage() + "\n";
             logAndSetResponse(response, HttpServletResponse.SC_BAD_REQUEST, failedMessage);
             ex.printStackTrace();
         }
-//
-//        String loggedUser = Common.sendPostCommand(Common.USER_LOGIN_URL, credentials.toString());
-//        String accessToken = Common.getKeyFromJsonString("accessToken", loggedUser);
-//
-//        String registeredCompany = Common.sendPostCommand(Common.COMPANY_REGISTER_URL, company.toString(), accessToken);
-//        System.out.println("Successfully registered the company - " + registeredCompany);
     }
 
     private void logAndSetResponse(HttpServletResponse response, int statusCode, String message) throws IOException {
