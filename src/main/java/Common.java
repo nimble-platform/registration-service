@@ -120,7 +120,7 @@ public class Common {
         try {
             String responseString = EntityUtils.toString(response.getEntity(), "UTF-8");
 
-            System.out.println(String.format("Status=%s, Response=%s", response.getStatusLine().toString(), response));
+            System.out.println(String.format("Status=%s, Response=%s", response.getStatusLine().toString(), responseString));
 
             return responseString;
         } catch (IOException e) {

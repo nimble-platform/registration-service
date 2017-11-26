@@ -15,7 +15,6 @@
  */
 
 import com.google.gson.Gson;
-import org.apache.commons.io.IOUtils;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -23,8 +22,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
 
 @WebServlet("/register")
 public class Register extends HttpServlet {
@@ -53,7 +50,7 @@ public class Register extends HttpServlet {
 
             String userToRegister = JsonGenerator.createUserJson(registerData.getFirstName(), registerData.getLastName(), userEmail, userPassword);
             UserRegisterData user = Common.registerUser(userToRegister);
-            String userId = user.getUserId();
+            String userId = user.getUserID();
             if (userId == null || userId.isEmpty()) {
                 throw new RuntimeException("Error during registration - registered user id returned null");
             }
@@ -76,7 +73,7 @@ public class Register extends HttpServlet {
     }
 
     private void logAndSetResponse(HttpServletResponse response, int statusCode, String message) throws IOException {
-        System.out.println(message);
+        System.out.print(message);
         response.getWriter().write(message);
         response.setStatus(statusCode);
     }

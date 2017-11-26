@@ -87,13 +87,14 @@ public class Main {
             String email = EMAILS_FOR_USERS[i];
             out(String.format("Running register a company '%s' with user '%s'", companyName, email));
             String userToRegister = JsonGenerator.createUserJson(FIRST_NAME, LAST_NAME, email, PASSWORD);
-            String registeredUser = Common.registerUser(userToRegister);
-            if (registeredUser == null) {
+            UserRegisterData registeredUser = Common.registerUser(userToRegister);
+            String userId  = registeredUser.getUserID();
+            if (userId == null || userId.isEmpty()) {
                 out("Error during registration");
                 System.exit(1);
             }
 
-            String userId = Common.getKeyFromJsonString("userID", registeredUser);
+//            String userId = Common.getKeyFromJsonString("userID", registeredUser);
             out(String.format("SUCCESS !!! User with email '%s' from company '%s' has the id '%s'", email, companyName, userId));
 
             SessionContext sessionContext = Common.loginUser(email, PASSWORD);
