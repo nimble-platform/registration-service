@@ -15,10 +15,7 @@
  */
 
 import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import org.apache.commons.io.IOUtils;
-import org.apache.http.HttpResponse;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -30,33 +27,67 @@ import java.io.InputStream;
 import java.io.StringWriter;
 
 @WebServlet("/register")
-public class RegisterCompany extends HttpServlet {
+public class Register extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        System.out.println("Inside do post on the /register path");
-        InputStream fileStream = request.getInputStream();
-        StringWriter writer = new StringWriter();
-        IOUtils.copy(fileStream, writer, "UTF-8");
-        String inputString = writer.toString();
-        System.out.println("Received input : " + inputString);
+        try {
+            System.out.println("Inside do post on the /register path");
+            InputStream fileStream = request.getInputStream();
+            StringWriter writer = new StringWriter();
+            IOUtils.copy(fileStream, writer, "UTF-8");
+            String inputString = writer.toString();
+            if (inputString == null || inputString.isEmpty()) {
+                logAndSetResponse(response, HttpServletResponse.SC_PARTIAL_CONTENT, "Body can't be empty\n");
+                return;
+            }
+            System.out.println("Received input : " + inputString);
+            FullRegisterData registerData = (new Gson()).fromJson(inputString, FullRegisterData.class);
+            if (!registerData.hasAllValues()) {
+                logAndSetResponse(response, HttpServletResponse.SC_PARTIAL_CONTENT, "Missing values from the template\n");
+                return;
+            }
 
-        FullRegisterData registerData = (new Gson()).fromJson(inputString, FullRegisterData.class);
-        if (!registerData.hasAllValues()) {
-            response.getWriter().write("Missing values from the template");
-            response.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
+            String userEmail = registerData.getUserEmail();
+            String userPassword = registerData.getUserPassword();
+            String companyName = registerData.getCompanyName();
+
+            String userToRegister = JsonGenerator.createUserJson(registerData.getFirstName(), registerData.getLastName(), userEmail, userPassword);
+            UserRegisterData user = Common.registerUser(userToRegister);
+            String userId = user.getUserId();
+            if (userId == null || userId.isEmpty()) {
+                throw new RuntimeException("Error during registration - registered user id returned null");
+            }
+
+            System.out.println(String.format("SUCCESS !!! User with email '%s' from company '%s' has the id '%s'", userEmail, companyName, userId));
+            SessionContext sessionContext = Common.loginUser(userEmail, userPassword);
+
+            String companyJson = JsonGenerator.createCompanyJson(companyName, userId, COMPANY_COUNTRIES[i], COMPANY_CITIES[i], COMPANY_STREETS[i], COMPANY_BUILDINGS[i], POSTAL_CODE);
+            String registeredCompany = Common.registerCompany(companyJson, sessionContext);
+            out(registeredCompany);
+
+            String companyId = Common.getKeyFromJsonString("companyID", registeredCompany);
+
+            String successMessage = String.format("User registered id='%s', Company registered id='%s'\n", null, null);
+            logAndSetResponse(response, HttpServletResponse.SC_OK, successMessage);
+        } catch (Exception ex) {
+            String failedMessage = "Error during register command : " + ex.getMessage() + "\n";
+            logAndSetResponse(response, HttpServletResponse.SC_BAD_REQUEST, failedMessage);
+            ex.printStackTrace();
         }
-
-        System.out.println("Everything is ok");
 //
 //        String loggedUser = Common.sendPostCommand(Common.USER_LOGIN_URL, credentials.toString());
 //        String accessToken = Common.getKeyFromJsonString("accessToken", loggedUser);
 //
 //        String registeredCompany = Common.sendPostCommand(Common.COMPANY_REGISTER_URL, company.toString(), accessToken);
 //        System.out.println("Successfully registered the company - " + registeredCompany);
-//        response.getWriter().write(registeredCompany);
-//        response.setStatus(200);
+    }
+
+    private void logAndSetResponse(HttpServletResponse response, int statusCode, String message) throws IOException {
+        System.out.println(message);
+        response.getWriter().write(message);
+        response.setStatus(statusCode);
     }
 
 //

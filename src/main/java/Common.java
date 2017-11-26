@@ -1,3 +1,4 @@
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -48,12 +49,13 @@ public class Common {
         }
     }
 
-    static String registerUser(String jsonUser) {
+    static UserRegisterData registerUser(String jsonUser) {
         CloseableHttpResponse response = null;
         try {
             response = sendPostCommand(USER_REGISTER_URL, jsonUser);
 
-            return logAndGetResponse(response);
+            String responseString = logAndGetResponse(response);
+            return (new Gson()).fromJson(responseString, UserRegisterData.class);
         } finally {
             closeResponse(response);
         }
@@ -120,7 +122,7 @@ public class Common {
 
             System.out.println(String.format("Status=%s, Response=%s", response.getStatusLine().toString(), response));
 
-            return  responseString;
+            return responseString;
         } catch (IOException e) {
             e.printStackTrace();
         }
