@@ -31,7 +31,7 @@ public class Common {
         return writer.toString();
     }
 
-    static Credentials loginUser(String username, String password) {
+    static SessionContext loginUser(String username, String password) {
         CloseableHttpResponse response = null;
         try {
             String credentials = JsonGenerator.createCredentialsJson(username, password);
@@ -40,10 +40,9 @@ public class Common {
             String responseString = logAndGetResponse(response);
 
             String accessToken = getKeyFromJsonString("accessToken", responseString);
-            String userID = getKeyFromJsonString("userID", responseString);
-            Header cookieHeader = response.getFirstHeader("Set-Cookie");
+            String cookie = response.getFirstHeader("Set-Cookie").getValue();
 
-            return new Credentials(cookieHeader.getValue(), accessToken, userID);
+            return new SessionContext(cookie, accessToken);
         } finally {
             closeResponse(response);
         }
@@ -60,11 +59,11 @@ public class Common {
         }
     }
 
-    static String registerCompany(String jsonCompany, Credentials credentials) {
+    static String registerCompany(String jsonCompany, SessionContext sessionContext) {
         CloseableHttpResponse response = null;
         try {
-            Header tokenHeader = new BasicHeader("Authorization", "Bearer " + credentials.getAccessToken());
-            Header cookieHeader = new BasicHeader("Cookie", credentials.getCookie());
+            Header tokenHeader = new BasicHeader("Authorization", "Bearer " + sessionContext.getAccessToken());
+            Header cookieHeader = new BasicHeader("Cookie", sessionContext.getCookie());
             response = sendPostCommand(COMPANY_REGISTER_URL, jsonCompany, tokenHeader, cookieHeader);
 
             return logAndGetResponse(response);

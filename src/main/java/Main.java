@@ -109,9 +109,9 @@ public class Main {
             String userId = Common.getKeyFromJsonString("userID", registeredUser);
             out(String.format("SUCCESS !!! User named '%s' for company '%s' has the id '%s'", USERNAMES_FOR_COMANIES[i], companyName, userId));
 
-            Credentials credentials = Common.loginUser(email, PASSWORD);
-            String companyJson = JsonGenerator.createCompanyJson(companyName, credentials.getUserID(), COMPANY_COUNTRIES[i], COMPANY_CITIES[i], COMPANY_STREETS[i], COMPANY_BUILDINGS[i], POSTAL_CODE);
-            String registeredCompany = Common.registerCompany(companyJson, credentials);
+            SessionContext sessionContext = Common.loginUser(email, PASSWORD);
+            String companyJson = JsonGenerator.createCompanyJson(companyName, userId, COMPANY_COUNTRIES[i], COMPANY_CITIES[i], COMPANY_STREETS[i], COMPANY_BUILDINGS[i], POSTAL_CODE);
+            String registeredCompany = Common.registerCompany(companyJson, sessionContext);
             out(registeredCompany);
 
             String companyId = Common.getKeyFromJsonString("companyID", registeredCompany);
