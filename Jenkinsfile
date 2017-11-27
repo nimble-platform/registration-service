@@ -6,6 +6,7 @@ node ('nimble-jenkins-slave') {
     stage ('Build docker image') {
         sh 'mvn clean install'
         sh 'docker build -t nimbleplatform/registration-service:${BUILD_NUMBER} .'
+        sh 'sleep 5' // For the tag to populate
     }
 
     stage ('Push docker image') {
