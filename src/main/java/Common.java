@@ -94,10 +94,10 @@ public class Common {
         if (!excelHasAllValues(companiesSheet.getRow(0))) {
             throw new RuntimeException("Failed to parse the excel file");
         }
-        System.out.println(companiesSheet.getLastRowNum());
+        System.out.println("Excel file row count - " + companiesSheet.getLastRowNum());
 
         for (int i = 1; i < companiesSheet.getLastRowNum(); i++) {
-            System.out.println("Parsing row number - " + i);
+            System.out.println("Parsing excel file, row number - " + i);
             Row row = companiesSheet.getRow(i);
 
 //                if (row.getCell(0).getCellTypeEnum() == CellType.BLANK) {
