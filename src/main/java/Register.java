@@ -28,7 +28,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 @MultipartConfig
-@WebServlet("/register")
+@WebServlet("/full-register")
 public class Register extends HttpServlet {
     private static final long serialVersionUID = 1L;
 

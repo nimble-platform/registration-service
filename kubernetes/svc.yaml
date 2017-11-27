@@ -11,4 +11,4 @@ spec:
     protocol: TCP
     targetPort: 8080
   selector:
-     app: registration-service
+    app: registration-service
