@@ -84,7 +84,7 @@ public class Common {
         throw new RuntimeException(String.format("Missing key '%s' in json string '%s'", key, jsonString));
     }
 
-    static List<FullRegisterData> generateJsonArrayFromStream(InputStream inputStream) throws Exception {
+    static List<FullRegisterData> createRegistrationDataList(InputStream inputStream) throws Exception {
         List<FullRegisterData> list = new LinkedList<>();
         Workbook workbook = new XSSFWorkbook(inputStream);
         Sheet companiesSheet = workbook.getSheet("Companies");

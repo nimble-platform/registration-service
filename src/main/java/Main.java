@@ -86,7 +86,7 @@ public class Main {
     public static void main(String[] args) {
 
 //        FileInputStream excelFile = new FileInputStream(new File("nimble_entities.xlsx"));
-//        Common.generateJsonArrayFromStream(excelFile);
+//        Common.createRegistrationDataList(excelFile);
         for (int i = 0; i < 1; i++) {
             String companyName = COMPANY_NAMES[i];
             String email = EMAILS_FOR_USERS[i];

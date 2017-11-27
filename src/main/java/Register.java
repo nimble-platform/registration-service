@@ -15,9 +15,6 @@
  */
 
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
@@ -27,7 +24,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 import java.io.IOException;
-import java.util.Enumeration;
+import java.util.LinkedList;
 import java.util.List;
 
 @MultipartConfig
@@ -37,52 +34,59 @@ public class Register extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        System.out.println("Inside do post on the /register path");
+
+//        Enumeration<String> headers = request.getHeaderNames();
+//        while (headers.hasMoreElements()) {
+//            String h = headers.nextElement();
+//            String s = request.getHeader(h);
+//            System.out.println(String.format("%s = %s", h, s));
+//        }
         try {
-            Enumeration<String> headers = request.getHeaderNames();
-//            while (headers.hasMoreElements()) {
-//                String h = headers.nextElement();
-//                String s = request.getHeader(h);
-//                System.out.println(String.format("%s = %s", h, s));
-//            }
-            Part p = request.getPart("excel-file");
-            if (p == null) {
-                logAndSetResponse(response, HttpServletResponse.SC_BAD_REQUEST, "use excel-file header for file\n");
-                return;
-            }
-            List<FullRegisterData> registerList = Common.generateJsonArrayFromStream(p.getInputStream());
+            List<FullRegisterData> registerList = getRegisterDataList(request);
             if (registerList == null) {
                 logAndSetResponse(response, HttpServletResponse.SC_BAD_REQUEST, "Failed to parse the excel file\n");
                 return;
             }
-            if (true) {
-                return;
-
-            }
+            StringBuilder stringBuilder = new StringBuilder();
             for (FullRegisterData data : registerList) {
-                fullRegisterFlow(data);
+                String singleRegistration = fullRegisterFlow(data);
+                stringBuilder.append(singleRegistration);
             }
-
-            System.out.println("Inside do post on the /register path");
-            String inputString = Common.getInputStreamAsString(request.getInputStream());
-            if (inputString == null || inputString.isEmpty()) {
-                logAndSetResponse(response, HttpServletResponse.SC_PARTIAL_CONTENT, "Body can't be empty\n");
-                return;
-            }
-
-            System.out.println("Received input : " + inputString);
-            try {
-                FullRegisterData registerData = (new Gson()).fromJson(inputString, FullRegisterData.class);
-                fullRegisterFlow(registerData);
-            } catch (RegisterException ex) {
-                logAndSetResponse(response, ex.getErrorCode(), ex.getMessage() + "\n");
-
-            }
+            logAndSetResponse(response, HttpServletResponse.SC_OK, stringBuilder.toString());
+        } catch (RegisterException ex) {
+            logAndSetResponse(response, ex.getErrorCode(), ex.getMessage() + "\n");
         } catch (Exception e) {
-            logAndSetResponse(response, HttpServletResponse.SC_BAD_REQUEST, "Error during register command : " + e.getMessage());
+            logAndSetResponse(response, HttpServletResponse.SC_BAD_REQUEST, "Error during register command : " + e.getMessage() + "\n");
         }
     }
 
-    private void fullRegisterFlow(FullRegisterData registerData) throws RegisterException {
+
+    private List<FullRegisterData> getRegisterDataList(HttpServletRequest request) throws Exception {
+        String content = request.getHeader("content-type");
+        if (content.startsWith("multipart/form-data")) {
+            Part p = request.getPart("excel-file");
+            if (p == null) {
+                throw new RegisterException("use 'excel-file' header when sending the file", HttpServletResponse.SC_BAD_REQUEST);
+            }
+
+            return Common.createRegistrationDataList(p.getInputStream());
+        } else { // Default for now
+            String inputString = Common.getInputStreamAsString(request.getInputStream());
+            if (inputString == null || inputString.isEmpty()) {
+                throw new RegisterException("Body can't be empty", HttpServletResponse.SC_PARTIAL_CONTENT);
+            }
+
+            System.out.println("Received input : " + inputString);
+            final FullRegisterData registerData = (new Gson()).fromJson(inputString, FullRegisterData.class);
+            return new LinkedList<FullRegisterData>() {{
+                add(registerData);
+            }};
+        }
+    }
+
+
+    private String fullRegisterFlow(FullRegisterData registerData) throws RegisterException {
         try {
             if (!registerData.hasAllValues()) {
                 throw new RegisterException("Missing values from the template", HttpServletResponse.SC_PARTIAL_CONTENT);
@@ -107,8 +111,7 @@ public class Register extends HttpServlet {
 
             String companyId = Common.getKeyFromJsonString("companyID", registeredCompany);
 
-            String successMessage = String.format("User registered id='%s', Company registered id='%s'\n", userId, companyId);
-
+            return String.format("User registered id='%s', Company registered id='%s'\n", userId, companyId);
         } catch (Exception ex) {
             throw new RegisterException("Error during register command : " + ex.getMessage(), HttpServletResponse.SC_BAD_REQUEST);
         }
