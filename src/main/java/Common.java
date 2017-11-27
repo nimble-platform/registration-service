@@ -15,6 +15,7 @@ import org.apache.http.util.EntityUtils;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.util.LinkedList;
 import java.util.List;
@@ -27,6 +28,8 @@ public class Common {
     private static String USER_LOGIN_URL = BASE_URL + "/login";
     private static String USER_REGISTER_URL = BASE_URL + "/register/user";
     private static String COMPANY_REGISTER_URL = BASE_URL + "/register/company";
+
+    private static int REQUIRED_EXCEL_COLUMNS = 10;
 
     static String getInputStreamAsString(InputStream stream) throws IOException {
         StringWriter writer = new StringWriter();
@@ -94,22 +97,38 @@ public class Common {
         if (!excelHasAllValues(companiesSheet.getRow(0))) {
             throw new RuntimeException("Failed to parse the excel file");
         }
-        System.out.println("Excel file row count - " + companiesSheet.getLastRowNum());
+        int rowCount = companiesSheet.getPhysicalNumberOfRows();
+        if (rowCount < 1) {
+            throw new RegisterException("Excel file must have at least one row of data", HttpServletResponse.SC_BAD_REQUEST);
+        }
 
-        for (int i = 1; i < companiesSheet.getLastRowNum(); i++) {
+        System.out.println("Excel file row count - " + rowCount);
+
+        boolean reachedEmptyLine = false;
+        for (int i = 1; i < rowCount; i++) {
             System.out.println("Parsing excel file, row number - " + i);
             Row row = companiesSheet.getRow(i);
 
-//                if (row.getCell(0).getCellTypeEnum() == CellType.BLANK) {
-//                    System.out.println("Reached a blank row - stopping parsing");
-//                    break;
-//                }
-            for (int j = 0; j < 10; j++) {
-                Cell currentCell = row.getCell(i);
+            for (int j = 0; j < REQUIRED_EXCEL_COLUMNS; j++) {
+                Cell currentCell = row.getCell(i, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
+
                 CellType type = currentCell.getCellTypeEnum();
+                if (type == CellType.BLANK) {  // Check for when reaching an empty row
+                    if (isAllRowEmpty(row)) {
+                        reachedEmptyLine = true;
+                        break;
+                    } else {
+                        throw new RegisterException("Error parsing excel file - line has empty cells", HttpServletResponse.SC_BAD_REQUEST);
+                    }
+                }
+
                 if (type != CellType.STRING && type != CellType.NUMERIC) {
                     throw new RuntimeException(type + " is not supported");
                 }
+            }
+            if (reachedEmptyLine) {
+                System.out.println("Stopping file parsing - reached empty row on row count - " + rowCount);
+                break;
             }
             String firstName = row.getCell(0).getStringCellValue();
             String lastName = row.getCell(1).getStringCellValue();
@@ -140,6 +159,17 @@ public class Common {
 //                System.out.println(street);
 //                System.out.println(building);
 //                System.out.println(postalCode);
+    }
+
+    private static boolean isAllRowEmpty(Row row) {
+        boolean isAllEmpty = true;
+        for (int i = 0; i < REQUIRED_EXCEL_COLUMNS; i++) {
+            Cell c = row.getCell(i, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
+            if (CellType.BLANK != c.getCellTypeEnum()) {
+                isAllEmpty = false;
+            }
+        }
+        return isAllEmpty;
     }
 
     private static boolean excelHasAllValues(Row row) {

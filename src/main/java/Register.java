@@ -54,9 +54,11 @@ public class Register extends HttpServlet {
                 stringBuilder.append(singleRegistration);
             }
             logAndSetResponse(response, HttpServletResponse.SC_OK, stringBuilder.toString());
-        } catch (RegisterException ex) {
-            logAndSetResponse(response, ex.getErrorCode(), ex.getMessage() + "\n");
+        } catch (RegisterException e) {
+            e.printStackTrace();
+            logAndSetResponse(response, e.getErrorCode(), e.getMessage() + "\n");
         } catch (Exception e) {
+            e.printStackTrace();
             logAndSetResponse(response, HttpServletResponse.SC_BAD_REQUEST, "Error during register command : " + e.getMessage() + "\n");
         }
     }
